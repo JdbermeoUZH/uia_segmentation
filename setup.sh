@@ -16,3 +16,6 @@ pip install itk
 pip install dicom2nifti
 pip install nipype
 pip install nnunetv2
+pip install --upgrade git+https://github.com/FabianIsensee/hiddenlayer.git
+conda install graphviz -y
+pip install IPython
