@@ -1,11 +1,12 @@
 """
 Script to save one of the three Aneurysm datasets as a hdf5 file. The data is preprocessed as follows:
-- The scans are separated into two groups: < 4mm and >= 4mm. UIAs < 4mm are usually not treated, but we want to include down to 2.5 mm (models can still learn from them)
-- The scans are resampled to a target size and resolution
+- The scans are separated into two groups: < 4mm and >= 4mm. UIAs < 4mm are usually not treated, but we want to include down to 3 mm.
+    2mm <= d <= 3mm are still important for diagnosis.
+- The scans are resampled to a target size and resolution (in case this step is not alredy taken)
 - The scans are cropped around the label map (we were doing this to make the volumes smaller to try to process them whole in the GPUs, but you might want to skip this as we cannot replicate this preprocessing in a test sample)
 - The scans are stored in a hdf5 file
-- The filepaths of the scans with UIAs of less than 4mm of diameter are stored in the hdf5 file
-
+- Index are split into train, train-dev, val-dev and test sets
+- The filepaths of the scans with UIAs of less than 3mm of diameter are stored in the hdf5 file in a different group
 """
 
 import os
@@ -30,7 +31,7 @@ train_val_split_default             = 0.25
 preprocessed_default                = True
 level_of_dir_with_id_default        = -2
 path_to_save_processed_data_default = '/scratch_net/biwidl319/jbermeo/data/preprocessed/UIA_segmentation'
-diameter_threshold_default          = 2.5  # mm, separate the scans into two groups: < 4mm and >= 4mm. UIAs < 4mm are usually not treated, but we want to include down to 2.5 mm (models can still learn from them)
+diameter_threshold_default          = 3  # mm, separate the scans into two groups: < 4mm and >= 4mm. UIAs < 4mm are usually not treated, but we want to include down to 2.5 mm (models can still learn from them)
 seed                                = 0
 num_channels                        = 1
 target_size_default                 = (128, 220, 256)
@@ -66,7 +67,7 @@ def separate_filepaths_based_on_aneurysm_diameter(
     scan_fps: dict,
     diameter: float = diameter_threshold_default
     ):
-    less_than_4mm = []
+    less_than_x_mm = []
     for scan_id, image_fps in scan_fps.items():
         if 'seg' not in image_fps:
             continue
@@ -83,12 +84,12 @@ def separate_filepaths_based_on_aneurysm_diameter(
         uia_diameter = np.power(6 * uia_vol / np.pi, 1/3)
         
         if uia_diameter <= diameter:
-            less_than_4mm.append(scan_id)    
+            less_than_x_mm.append(scan_id)    
             
-    scan_fps_less_than_4mm = {scan_id: scan_fps[scan_id] for scan_id in less_than_4mm}
-    scan_fps_greater_than_4mm = {scan_id: scan_fps[scan_id] for scan_id in scan_fps if scan_id not in less_than_4mm}    
+    scan_fps_less_than_x_mm = {scan_id: scan_fps[scan_id] for scan_id in less_than_x_mm}
+    scan_fps_greater_than_x_mm = {scan_id: scan_fps[scan_id] for scan_id in scan_fps if scan_id not in less_than_x_mm}    
     
-    return scan_fps_less_than_4mm, scan_fps_greater_than_4mm    
+    return scan_fps_less_than_x_mm, scan_fps_greater_than_x_mm    
 
 
 def _verify_expected_channels(scan_data: np.ndarray, num_channels: int = 1):
@@ -220,7 +221,7 @@ if __name__ == '__main__':
         every_scan_has_seg=False)
     
     # Filter out the scans that have UIAs of less than 4mm of diameter
-    scan_fps_leq_4mm, scan_fps = separate_filepaths_based_on_aneurysm_diameter(
+    scan_fps_leq_x_mm, scan_fps = separate_filepaths_based_on_aneurysm_diameter(
         scan_fps, diameter=args.diameter_threshold if args.dataset != 'USZ' else 0)
     
     # Create a hdf5 file to store the preprocessed data
@@ -266,5 +267,6 @@ if __name__ == '__main__':
     add_scans_to_group(scan_fps, h5_fp, 'data', every_scan_has_seg)
 
     # Store the filepaths of the scans with UIAs of less than 4mm of diameter
-    if len(scan_fps_leq_4mm) >= 0:
-        add_scans_to_group(scan_fps_leq_4mm, h5_fp, 'data_leq_4mm', every_scan_has_seg)
+    if len(scan_fps_leq_x_mm) >= 0:
+        add_scans_to_group(scan_fps_leq_x_mm, h5_fp, f'data_leq_{args.diameter_threshold}mm', 
+                           every_scan_has_seg)

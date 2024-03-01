@@ -10,7 +10,8 @@ from datetime import datetime
 
 import SimpleITK as sitk
 
-sys.path.append(os.path.normpath(os.path.dirname(__file__), '..', '..', 'uia_segmentation', 'src'))
+sys.path.append(os.path.normpath(os.path.join(
+    os.path.dirname(__file__), '..', '..', 'uia_segmentation', 'src')))
 
 from preprocessing.bias_correction import N4bias_correction_filter
 from preprocessing.utils import get_filepaths
