@@ -152,7 +152,7 @@ nnUNet_n_proc_DA=0 nnUNetv2_predict \
  -d 3 \ # This is to retrieve the model that corresponds a specific dataset 
  -chk checkpoint_latest.pth \
  -p 6GB_gpu \
- -f all \ # Specify the folds of the trained model that should be used for prediction. Default: (0, 1, 2, 3, 4)
+ -f all \ #Specify the folds of the trained model that should be used for prediction. Default: (0, 1, 2, 3, 4)
  --verbose    
 ```
 
