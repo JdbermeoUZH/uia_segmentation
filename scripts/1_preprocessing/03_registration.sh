@@ -4,9 +4,7 @@
 #SBATCH --ntasks=4
 #SBATCH --gres=gpu:1
 
-cd ../tta_uia_segmentation/src/preprocessing
-source /itet-stor/jbermeo/net_scratch/conda/etc/profile.d/conda.sh
-conda activate nnUnet_dev
+conda activate uia_seg
 
 python 03_registration.py \
     --multi_proc \

@@ -17,6 +17,7 @@ import nibabel as nib
 
 sys.path.append(os.path.normpath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'uia_segmentation', 'src')))
+
 from preprocessing.resampling import resample
 from preprocessing.utils import get_filepaths
 
@@ -24,7 +25,7 @@ from preprocessing.utils import get_filepaths
 #---------- paths & hyperparameters
 voxel_size_default          = np.array([0.3, 0.3, 0.6]) # hyper parameters to be set
 save_logs                   = True
-path_to_logs                = '/scratch_net/biwidl319/jbermeo/MastersThesisUIASegmentation/logs/preprocessing/resampling'
+path_to_logs                = '/scratch_net/biwidl319/jbermeo/MastersThesisUIASegmentation/logs/preprocessing/1_resampled'
 path_to_save_processed_data = '/scratch_net/biwidl319/jbermeo/data/preprocessed/1_resampled'
 #----------
 

@@ -8,6 +8,5 @@ export nnUNet_raw="/scratch_net/biwidl319/jbermeo/data/nnUNet_raw"
 export nnUNet_preprocessed="/scratch_net/biwidl319/jbermeo/data/nnUNet_preprocessed"
 export nnUNet_results="/scratch_net/biwidl319/jbermeo/data"
 
-source /itet-stor/jbermeo/net_scratch/conda/etc/profile.d/conda.sh
-conda activate UIASegmentation
+conda activate uia_seg
 nnUNetv2_plan_and_preprocess --verify_dataset_integrity "$@" #-d DATASET_ID

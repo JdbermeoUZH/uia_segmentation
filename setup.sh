@@ -1,3 +1,5 @@
+conda create --name uia_seg python=3.10 -y
+conda activate uia_seg
 conda install pytorch torchvision pytorch-cuda=11.8 -c pytorch -c nvidia  -y
 #conda install pytorch torchvision torchaudio cpuonly -c pytorch
 conda install pandas  -y

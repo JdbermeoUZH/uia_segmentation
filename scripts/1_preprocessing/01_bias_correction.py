@@ -19,7 +19,7 @@ from preprocessing.utils import get_filepaths
 #---------- paths & hyperparameters
 shrink_factor_default       = 1
 max_num_iters_default       = [50, 50, 50] 
-path_to_logs                = '/scratch_net/biwidl319/jbermeo/MastersThesisUIASegmentation/logs/preprocessing/resampling'
+path_to_logs                = '/scratch_net/biwidl319/jbermeo/MastersThesisUIASegmentation/logs/preprocessing/01_bias_correction'
 path_to_save_processed_data = '/scratch_net/biwidl319/jbermeo/data/preprocessed/0_bias_corrected'
 multi_proc_default          = True
 n_threads_default           = 4
@@ -166,7 +166,6 @@ def bias_correction_multiprocess(
                 shutil.copyfile(img_dict['seg'], os.path.join(img_output_dir, f'{img_id}_seg.nii.gz'))   
         
         log.info(f"Scan {img_id} bias corrected")
-
     
 
 if __name__ == '__main__':
