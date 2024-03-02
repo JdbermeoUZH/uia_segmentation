@@ -15,6 +15,45 @@ import numpy as np
 import nibabel as nib
 
 
+predefined_transformations = {
+    'BinaryAllVessels': lambda x: binarize_segmentation(x),
+    'BinaryAneurysmOnly': lambda x: binarize_segmentation(x, only_specific_vessel_class=4),
+    '3ClassesAneurysmVsHealthyVessels': lambda x: collapse_all_classes_except_one(x, class_not_to_collapse=4, value_to_collapse_to=1),
+    '21Classes': lambda x: x,
+    'BinaryUntreatedUIAsAndTreatedUIAsVsBackground': lambda x: binarize_segmentation(x),
+    'BinaryUntreatedUIAsVsBackground': lambda x: binarize_segmentation(x, only_specific_vessel_class=1),
+    '3ClassesUntreatedUIAsVsTreatedUIAsVsBackground': lambda x: x,
+}
+
+
+def binarize_segmentation(img_np, only_specific_vessel_class: int = None):
+    if not only_specific_vessel_class:
+        img_np = np.where(img_np >= 1, 1, 0)
+    else:
+        img_np = np.where(img_np == only_specific_vessel_class, 1, 0)
+    return img_np
+
+
+def collapse_all_classes_except_one(img_np, class_not_to_collapse: int, value_to_collapse_to: int):
+    # Collapse all clasess to the class 1 except the class_not_to_collapse
+    img_np = np.where((img_np != class_not_to_collapse) & (img_np != 0), 
+                      value_to_collapse_to, img_np)
+    
+    # Set the class_not_to_collapse class to 2
+    img_np = np.where(img_np == class_not_to_collapse, 2, img_np)
+    
+    return img_np.astype(np.int8)
+
+
+def transform_label_vol(filepath: list, transformation: callable):
+    img = nib.load(filepath)
+    img_np = img.get_fdata()
+    img_np = transformation(img_np)
+    img = nib.Nifti1Image(img_np, img.affine, img.header)
+    nib.save(img, filepath)
+    
+
+
 def read_all_from_nii(path_image_nii):
     nii_img = nib.load(path_image_nii)
     return nii_img.get_fdata(), nii_img.affine.copy(), nii_img.header.copy()
@@ -270,49 +309,3 @@ def get_filepaths(
     return scans_dict
 
 
-if __name__ == '__main__':
-    import yaml
-    
-    config_ds = yaml.load(open('MastersThesisUIASegmentation/config/datasets.yaml', 'r'),
-                          Loader=yaml.FullLoader)
-    SIZE_USZ = 62
-    SIZE_ADAM = 113
-    SIZE_LAUSSANE = 38
-    
-    # Check if USZ dataset filepaths are indexed correctly
-    test_usz_filepaths = get_filepaths_raw(
-        path_to_tof_dir=config_ds['USZ']['raw']['path_to_tof_dir'],
-        fp_pattern_tof=config_ds['USZ']['raw']['fp_pattern_tof'],
-        path_to_seg_dir=config_ds['USZ']['raw']['path_to_seg_dir'],
-        fp_pattern_seg=config_ds['USZ']['raw']['fp_pattern_seg_mask'],
-        level_of_dir_with_id=config_ds['USZ']['raw']['level_of_dir_with_id'],
-        every_scan_has_seg=config_ds['USZ']['raw']['every_scan_has_seg']
-    )
-    assert len(test_usz_filepaths) == SIZE_USZ, \
-        f"The number of scans is not the expected one. It should be 62, but it is {len(test_usz_filepaths)}"
-        
-    # Check if ADAM dataset filepaths are indexed correctly
-    test_adam_filepaths = get_filepaths_raw(
-        path_to_tof_dir=config_ds['ADAM']['raw']['path_to_tof_dir'],
-        fp_pattern_tof=config_ds['ADAM']['raw']['fp_pattern_tof'],
-        path_to_seg_dir=config_ds['ADAM']['raw']['path_to_seg_dir'],
-        fp_pattern_seg=config_ds['ADAM']['raw']['fp_pattern_seg_mask'],
-        level_of_dir_with_id=config_ds['ADAM']['raw']['level_of_dir_with_id'],
-        every_scan_has_seg=config_ds['ADAM']['raw']['every_scan_has_seg']
-    )
-    assert len(test_adam_filepaths) == SIZE_ADAM, \
-        f"The number of scans is not the expected one. It should be 30, but it is {len(test_adam_filepaths)}"
-        
-    # Check if Lausanne dataset filepaths are indexed correctly
-    test_lausanne_filepaths = get_filepaths_raw(
-        path_to_tof_dir=config_ds['Lausanne']['raw']['path_to_tof_dir'],
-        fp_pattern_tof=config_ds['Lausanne']['raw']['fp_pattern_tof'],
-        path_to_seg_dir=config_ds['Lausanne']['raw']['path_to_seg_dir'],
-        fp_pattern_seg=config_ds['Lausanne']['raw']['fp_pattern_seg_mask'],
-        level_of_dir_with_id=config_ds['Lausanne']['raw']['level_of_dir_with_id'],
-        every_scan_has_seg=config_ds['Lausanne']['raw']['every_scan_has_seg']
-    )
-    assert len(test_lausanne_filepaths) == SIZE_LAUSSANE, \
-        f"The number of scans is not the expected one. It should be 38, but it is {len(test_lausanne_filepaths)}"
-        
-    print('All tests passed!')

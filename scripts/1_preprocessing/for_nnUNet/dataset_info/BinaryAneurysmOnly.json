@@ -1,0 +1,14 @@
+{
+    "name": "USZ_UIA_anuerysm_only",
+    "description": "UIA vs. Background",
+    "reference": "Universitatsspital Zurich, Switzerland",
+    "labels": {
+        "background": 0,
+        "Aneurysm": 1
+    },
+    "numTraining": 49,
+    "channel_names": {
+        "0": "TOF MRA"
+    },
+    "file_ending": ".nii.gz"
+}

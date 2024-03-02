@@ -1,0 +1,16 @@
+{
+    "name": "ADAM_Challenge_anuerysm_only",
+    "description": "Binary: Treated UIAs or artefacts resulting from treated aneurysms and untreated UIAs (1) vs. Background (0)",
+    "reference": "by Kimberley Timmins, Image Sciences Institute, UMC Utrecht, the Netherlands, URL: https://adam.isi.uu.nl/data/",
+    "license": "None, all rights reserved",
+    "release": "1.3",
+    "labels": {
+        "background": 0,
+        "Untreated Aneurysm": 1
+    },
+    "numTraining": 90,
+    "channel_names": {
+        "0": "TOF MRA"
+    },
+    "file_ending": ".nii.gz"
+}

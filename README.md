@@ -8,7 +8,7 @@ However, if you are using the nnUNet framework, these are unnecessary, as nnUNet
 The results we have so far are with the default nnUnet parameters and without bias correction.
 
 With nnUnet you just need to use the command line commands to preprocess the data, train a model, and evaluate it.
-(see [preprocess_nnUNet.sh](scripts%2F1_preprocessing%2Fpreprocess_nnUNet.sh), [train_nnUNet.sh](scripts%2F2_training%2Ftrain_nnUNet.sh), and [predict_nnUNet.sh](scripts%2F3_evaluate%2Fpredict_nnUNet.sh))
+(see [preprocess_nnUNet.sh](scripts/1_preprocessing/for_nnUNet/preprocess_nnUNet.sh), [train_nnUNet.sh](scripts%2F2_training%2Ftrain_nnUNet.sh), and [predict_nnUNet.sh](scripts%2F3_evaluate%2Fpredict_nnUNet.sh))
 The only requirement is that you have the volumes in the file structure that they require (https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/how_to_use_nnunet.md#dataset-format).  
 
 To use other loss functions with nnUnet or modify it's training, one can extend one of the Trainers defined in the repo: https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/extending_nnunet.md.
@@ -48,19 +48,30 @@ nnUNet_raw/
 ├── Dataset002_USZBinaryAneurysmOnly
 ├── Dataset003_USZ3ClassesAneurysmVsHealthyVessels
 ├── Dataset004_USZ21Classes
-├── Dataset005_ADAM3ClassesUntreatedUIAsVsTreatedUIAsVsBackground
-├── Dataset006_ADAMBinaryUntreatedUIAsAndTreatedUIAsVsBackground
-├── Dataset007_ADAMBinaryUntreatedUIAsVsBackground
+├── Dataset005_ADAMBinaryUntreatedUIAsAndTreatedUIAsVsBackground
+├── Dataset006_ADAMBinaryUntreatedUIAsVsBackground
+├── Dataset007_ADAM3ClassesUntreatedUIAsVsTreatedUIAsVsBackground
 ├── ...
 ```
 
 For each volume in `imagesTr`, we need the corresponding ground truth mask in `labelsTr`, which is why we have a dataset
 for each type of groupings of the segmentation targets. 
 
-To preprocess a dataset is then a matter of running the command on the dataset you plan on using:
+To transform the raw datasets into this structure, you can use the script [copy_files_in_nnUNet_format.py](scripts/1_preprocessing/for_nnUNet/copy_files_in_nnUNet_format.py)
+
+```bash
+conda activate uia_seg
+
+python copy_files_in_nnUNet_format.p USZ 1 BinaryAllVessels --path_to_tof_dir <path_raw_dir> # <Datset name, USZ or ADAM> <ID you want to give the file> <Type of transformation you want to use on the target> <path to were the raw dir is>
+```
+
+There are some transformations defined in the dict `predefined_transformations` in this [file](uia_segmentation/src/preprocessing/utils.py) to generate the datasets listed in the example.
+
+To preprocess a dataset with nnUNet is then a matter of running the command on the dataset you plan on using:
 ```bash
 export nnUNet_raw="<Path to the dir with the dataset>"
 export nnUNet_preprocessed="<Path to the dir where the preprocessed data will be saved>"
+nnUNet_results="<Path to where the checkpoints and history will be stored>"
 conda activate uia_seg
 
 nnUNetv2_plan_and_preprocess --verify_dataset_integrity \
@@ -83,6 +94,14 @@ conda activate uia_seg
 python 01_bias_correction.py --dataset USZ --path_to_tof_dir ../data/raw/USZ \
  --path_to_save_processed_data ../data/preprocessed/01_bias_correction/USZ
 ```
+
+If you wish to generate a dataset in the nnUNet format, you can use the script from earlier on the dir with the bias corrected volumes in the following way:
+```bash
+conda activate uia_seg
+
+python copy_files_in_nnUNet_format.p USZ 1 BinaryAllVessels --preprocessed --path_to_dir ../data/preprocessed/01_bias_correction/USZ # <Datset name, USZ or ADAM> <ID you want to give the file> <flag signaling the dir has a common structure> <path to the preprocessed dir>
+```
+
 #### Resampling
 Use the script [02_resampling.py](scripts%2F1_preprocessing%2F02_resampling.py) as shown next:
 ```bash
@@ -96,7 +115,7 @@ python 02_resampling.py --preprocessed --path_to_dir ../data/preprocessed/01_bia
 
 #### Write to h5 file
 
-Use the script [04_save_into_hd5_file.py](scripts%2F1_preprocessing%2F05_save_into_hd5_file.py) to write the two datasets to a single h5 file with the same format (I stopped working on this task before fully testing this, so it might not work)
+Use the script [04_save_into_hd5_file.py](scripts%2F1_preprocessing%2F05_save_into_hd5_file.py) to create fold splits for cross-validation, and write to a single h5 file which we can then load with this [Dataset class](uia_segmentation/src/dataset/dataset_h5.py) (I stopped working on this task before fully testing this, so it might not work).
 
 ```bash
 conda activate uia_seg
@@ -111,7 +130,7 @@ python 04_save_into_hd5_file.py USZ ../data/preprocessed/02_resampled/USZ \
 ## Training
 
 ### With nnUNet
-Similar to the plan and preprocess script, you have to use a command to specify the dataset id you want to use during training. As nnUNet allows you to use differetnt types of UNet architectures to train (2d, 3d_lowres, 3d_full, 3d_casacade), you also need to specify this, as well as the fold you want to use (it always does cv5 by default), and the name of the "plan" generated in the previous step
+Similar to the plan and preprocess script, you have to use a command to specify the dataset id or full name you want to use during training. As nnUNet allows you to use differetnt types of UNet architectures to train (2d, 3d_lowres, 3d_full, 3d_casacade), you also need to specify this, as well as the fold you want to use (it always does cv5 by default), and the name of the "plan" generated in the previous step
 
 ```bash
 export nnUNet_raw="<Path to the dir with the dataset>"
@@ -137,7 +156,7 @@ Another student obtained similar results to nnUNet in the USZ dataset with a van
 
 ## Evalaution
 
-You can use the predict method to obtain the predicted segmentation labels on the test set. Keep in mind that the dice calculated on the holdout set during training with nnUNet is an optimistic estimate, as it is not calculated over the volumes but over patches in a resampled resolution rather than the original one. The cleanest estimate of performance would be to obtain the prediction on the original resolution and at a volume level by obtaining the predictions with this command and then using your own script to calculate the metrics.
+You can use the predict method to obtain the predicted segmentation labels on the test set. Keep in mind that the dice calculated on the holdout set during training with nnUNet is an optimistic estimate, as it is not calculated over the volumes but over patches in a resampled resolution rather than the original one. The cleanest estimate of performance would be to obtain the prediction on the original resolution and at a volume level by obtaining the predictions with this command and then use a [script](scripts/3_evaluate/1_evaluate_predictions.py) to calculate the metrics.
 
 ```bash
 export nnUNet_raw="<Path to the dir with the dataset>"
@@ -154,6 +173,17 @@ nnUNet_n_proc_DA=0 nnUNetv2_predict \
  -p 6GB_gpu \
  -f all \ #Specify the folds of the trained model that should be used for prediction. Default: (0, 1, 2, 3, 4)
  --verbose    
+```
+
+```bash
+conda activate uia_seg
+
+python 1_evaluate_predictions.py \
+ ../data/nnUNet_raw/Dataset003_USZ3ClassesAneurysmVsHealthyVessels/ImagesTs \ # dir with gt volumes
+ ../results/predictions/Dataset003_USZ3ClassesAneurysmVsHealthyVessels/ImagesTs \ # dir with pred volumes
+ ../results/metrics/Dataset003_USZ3ClassesAneurysmVsHealthyVessels/ImagesTs \ # Output dir where a csv with the metrics per volume are stored
+ 2 # label of the aneurysm class to calculate aneuyrsm spcific metrics
+
 ```
 
 ## Relevant repositories and papers

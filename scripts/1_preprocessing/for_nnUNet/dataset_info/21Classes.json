@@ -1,0 +1,34 @@
+{
+    "name": "ElisaBrainAneurysm",
+    "description": "Intercranial vasculature and aneurysm segmentation",
+    "reference": "Universitatsspital Zurich, Switzerland",
+    "labels": {
+        "background": 0,
+        "CA": 1,
+        "VA": 2,
+        "BA": 3,
+        "Aneurysm": 4,
+        "MCA-M1": 5,
+        "MCA-M2": 6,
+        "MCA-M3": 7,
+        "ACA-A1": 8,
+        "ACA-A2": 9,
+        "ACA-A3": 10,
+        "AComm": 11,
+        "PICA": 12,
+        "AICA": 13,
+        "SCA": 14,
+        "PCA-P1": 15,
+        "PCA-P2": 16,
+        "PCA-P3": 17,
+        "PComm": 18,
+        "Opthalmic": 19,
+        "Fetal-PCA": 20,
+        "Choroidea": 21
+    },
+    "numTraining": 49,
+    "channel_names": {
+        "0": "TOF MRA"
+    },
+    "file_ending": ".nii.gz"
+}

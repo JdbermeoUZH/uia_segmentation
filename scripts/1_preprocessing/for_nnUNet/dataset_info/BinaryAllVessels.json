@@ -1,0 +1,14 @@
+{
+    "name": "USZ_UIA_binary_all_vessels",
+    "description": "Vessels vs. Background",
+    "reference": "Universitatsspital Zurich, Switzerland",
+    "labels": {
+        "background": 0,
+        "ICA and Aneurysms": 1
+    },
+    "numTraining": 49,
+    "channel_names": {
+        "0": "TOF MRA"
+    },
+    "file_ending": ".nii.gz"
+}

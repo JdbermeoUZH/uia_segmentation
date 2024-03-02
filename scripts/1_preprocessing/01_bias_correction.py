@@ -172,11 +172,6 @@ def bias_correction_multiprocess(
 if __name__ == '__main__':
     args = preprocess_cmd_args()
     
-    # path_to_USZ_dataset         = '/scratch_net/biwidl319/jbermeo/data/raw/USZ'
-    # path_to_ADAM_dataset        = '/scratch_net/biwidl319/jbermeo/data/raw/ADAM'
-    # path_to_Laussane_tof        = '/scratch_net/biwidl319/jbermeo/data/raw/Lausanne/original_images'
-    # path_to_Laussane_seg        = '/scratch_net/biwidl319/jbermeo/data/raw/Lausanne/skull_stripped_and_aneurysm_mask'
-    
     # Get filepaths of the the dataset
     scans_dict = get_filepaths(
         preprocessed=args.preprocessed,
