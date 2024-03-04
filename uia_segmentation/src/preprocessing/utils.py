@@ -48,7 +48,7 @@ def collapse_all_classes_except_one(img_np, class_not_to_collapse: int, value_to
 def transform_label_vol(filepath: list, transformation: callable):
     img = nib.load(filepath)
     img_np = img.get_fdata()
-    img_np = transformation(img_np)
+    img_np = transformation(img_np).astype(np.int8)
     img = nib.Nifti1Image(img_np, img.affine, img.header)
     nib.save(img, filepath)
     
