@@ -1,3 +1,5 @@
 logs/
 .idea/
 .vscode/
+nnUNet/
+uia_segmentation/src/preprocessing/__pycache__/

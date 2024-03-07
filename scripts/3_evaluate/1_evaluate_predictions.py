@@ -15,6 +15,8 @@ sys.path.append(os.path.normpath(os.path.join(
 
 from preprocessing.utils import binarize_segmentation
 
+from nnunetv2.utilities.default_n_proc_DA import get_allowed_n_proc_DA
+
 
 #---------- default params
 script_path = os.path.dirname(os.path.abspath(__file__))
