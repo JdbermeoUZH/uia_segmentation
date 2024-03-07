@@ -149,6 +149,9 @@ nnUNet_n_proc_DA=0 nnUNetv2_train <DATASET_NAME_OR_ID> \
 
 The results reported on the document are for `3d_fullres`.
 
+**Note**: For some reason, cuDNN is not working when using `3d_fullres` or `3d_lowres`, but it does work for `2d`. Somehow there is an error when calling autograd in either of those two configurations. However, if you set `torch.backends.cudnn.enabled = False` in the training scripts from nnUnet, like at the beggining of  `nnUNet/nnunetv2/run/run_training.py`, then it should run (a bit slower though).
+
+
 ### Without UNet
 I do not have a script to train a model, but there is a [UNet Module](uia_segmentation/src/models/UNet.py) and [Dataset class](uia_segmentation/src/dataset/dataset_h5.py) (still needs more work) in this repo you could use to train your onw model if you want to.
 
